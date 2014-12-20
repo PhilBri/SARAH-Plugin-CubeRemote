@@ -42,9 +42,8 @@ exports.action = function ( data , callback , config , SARAH ) {
 	// Making xml body
 	var CubeUrn 	= 'schemas-nds-com:service:' + data.CubeUrnL.split('*')[0] + '#';
 	var CubeUrl 	= data.CubeUrnL.split('*')[1];
-	//if (data.CubeAction) {
 	var CubeAction 	= data.CubeAction.split('*')[0];
-	var CubeResp 	= data.CubeAction.split('*')[1];//}
+	var CubeResp 	= (data.CubeAction.split('*').length > 1) ? data.CubeAction.split('*')[1] : '';
 	var body;
 	
 	if ( typeof data.CubeTag != 'undefined') var CubeTag = data.CubeTag.split('*');
@@ -67,9 +66,11 @@ exports.action = function ( data , callback , config , SARAH ) {
 
 	console.log ( 'http://' + cfg.Cube_IP + ':49152' + CubeUrl );
 	console.log ( '"urn:' + CubeUrn + CubeAction + '"' );
+	console.log ('CubeAction = ' + CubeAction + ' CubeResp = ' + CubeResp+'\n');
 	console.log ( '\n' + body + '\n');
 
 	//return;// callback ({ 'tts' : 'ok'}); // for test only
+
 	SendCube ();
 
 	// Sending SOAP request
@@ -86,26 +87,27 @@ exports.action = function ( data , callback , config , SARAH ) {
 
 		}, function ( error , response , body ) {
 
+			var strRet 	= '\nCubeRemote => Cmd "' + CubeAction + '"';
+
 			if ( ! error && response.statusCode == 200 ) {
 
-				var strRet 	= '\nCubeRemote => Commande "' + CubeAction + '"',
-					body 	= body.replace( /&lt;/gm, '<' ).replace( /&gt;/gm, '>' ),
+				var	body 	= body.replace( /&lt;/gm, '<' ).replace( /&gt;/gm, '>' ),
 					ret 	= /<executionStatus>(.*?)<\/executionStatus>/gmi.exec( body ),
 					ret2 	= new RegExp ( '<' + CubeResp + '>(.*?)<\/' + CubeResp + '>').exec( body );
 
 				if ( ret != null ) strRet += ' : Code exec = ' + ret[1];
 
-				if ( typeof CubeResp != 'undefined' && ret2 != null ) {
-          			strRet += ' : Retour cmd = ' + ret2[1];
-					return callback ({ 'tts' : data.ttsAction.replace ( 'x', ret2[1] ) });
+				if ( CubeResp != '' && ret2 != null ) {
+					data.ttsAction = data.ttsAction.replace ( 'x', ret2[1] )
+          			strRet += ' : ' + data.ttsAction;
 				}
-				console.log (strRet);
-				callback ({ 'tts' : data.ttsAction });
 			} else {
 
-				console.log ( '\nCubeRemote => Commande "' + CubeAction + '" = ' + error + '\n' );
-				callback ({ 'tts': "L'action a échouée" });
+				strRet += ' : ' + error;
+				data.ttsAction = "L'action a échouée";
 			}
+			console.log ( strRet + '\n' );
+			callback ({ 'tts' : data.ttsAction });
 		});
 	}
 }
