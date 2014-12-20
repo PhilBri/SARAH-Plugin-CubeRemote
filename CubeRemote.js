@@ -1,5 +1,5 @@
 /*__________________________________________________
-|                CubeRemote v1.0                    |
+|                CubeRemote v1.04b                  |
 |                                                   |
 | Author : Boris Loizeau & Phil Bri (12/2014)       |
 |    (See http://encausse.wordpress.com/s-a-r-a-h/) |
