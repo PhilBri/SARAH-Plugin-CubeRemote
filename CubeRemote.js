@@ -64,10 +64,7 @@ exports.action = function ( data , callback , config , SARAH ) {
 
 	body = body.replace ( 'Code_Appairage', cfg.Code_Appairage );
 
-	console.log ( 'http://' + cfg.Cube_IP + ':49152' + CubeUrl );
-	console.log ( '"urn:' + CubeUrn + CubeAction + '"' );
-	console.log ('CubeAction = ' + CubeAction + ' CubeResp = ' + CubeResp+'\n');
-	console.log ( '\n' + body + '\n');
+	console.log ('\nCubeAction = ' + CubeAction + ' CubeResp = ' + CubeResp+'\n');
 
 	//return;// callback ({ 'tts' : 'ok'}); // for test only
 
@@ -108,6 +105,8 @@ exports.action = function ( data , callback , config , SARAH ) {
 			}
 			console.log ( strRet + '\n' );
 			callback ({ 'tts' : data.ttsAction });
+
+			console.log ( '\nRetour pour "debug" :\r' + body + '\n');
 		});
 	}
 }

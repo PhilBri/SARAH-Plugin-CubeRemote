@@ -4,7 +4,7 @@
 
 <!-- Format des commandes
 CubeUrnL => 2 valeurs séparées par '*' [Urn*Url]  - (Les 2 valeurs sont obligatoires)
-CubeTag => Paires de valeurs [tag1*valeur1*Tag2*Valeur2*TagN*ValeurN] séparées par '*' (Non nécessaire sur certaines foncions)
+CubeTag => Paires de valeurs [tag1*valeur1*Tag2*Valeur2*TagN*ValeurN] séparées par '*' (Non nécessaire sur certaines fonctions)
 CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube non obligatoire (Pour "Get" seulement).
 -->
 
@@ -21,7 +21,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                             <tag>
                                 out.action.ttsAction = "La chaîne x est affichée";
                                 out.action.CubeUrnL = "Channel-Selection:1*/ChannelSelectionService/control/";
-                                out.action.CubeAction = "GetSelectedChannel*selectedChannel"
+                                out.action.CubeAction = "GetSelectedChannel*channelNumber"
                             </tag>
                         </item>
                         <item>Quel est le volume
@@ -35,7 +35,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                             <tag>
                                 out.action.ttsAction = "Le volume est mis à 10 %";
                                 out.action.CubeUrnL = "Volume:1*/VolumeService/control/";
-                                out.action.CubeAction = "SetVolumeState";
+                                out.action.CubeAction = "SetVolumeLevel";
                                 out.action.CubeTag = "level*10";
                             </tag>
                         </item>
@@ -43,7 +43,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                             <tag>
                                 out.action.ttsAction = "Le volume est mis à 20 %";
                                 out.action.CubeUrnL = "Volume:1*/VolumeService/control/";
-                                out.action.CubeAction = "SetVolumeState";
+                                out.action.CubeAction = "SetVolumeLevel";
                                 out.action.CubeTag = "level*20";
                             </tag>
                         </item>

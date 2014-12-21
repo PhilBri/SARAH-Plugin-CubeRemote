@@ -2,7 +2,7 @@
 	"modules" : {
 		"CubeRemote"  : {
 			"description": "SARAH controle le Cube Canalsat",
-			"Version" : "0.6",
+			"Version" : "1.06",
 			"Cube_IP" : "",
 			"Code_Appairage" : ""
 		}
