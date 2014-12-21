@@ -17,7 +17,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
 <!-- Item 1 (Début de phrase) -->
                     <one-of>
 <!-- Volume (Get/Set functions) -->
-<!--                        <item>Liste les infos des chaînes
+<!--                    <item>Liste les infos des chaînes
                             <tag>
                                 out.action.ttsAction = "Les infos sont affichées";
                                 out.action.CubeUrnL = "Channel-List:1*/ChannelListService/control/";
@@ -39,6 +39,22 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                                 out.action.CubeAction = "GetSelectedChannel*channelNumber";
                             </tag>
                         </item>
+                        <item>Coupe le son
+                            <tag>
+                                out.action.ttsAction = "Le son est coupé;
+                                out.action.CubeUrnL = "Volume:1*/VolumeService/control/";
+                                out.action.CubeAction = "SetMute";
+                                out.action.CubeTag = "isMuted*1";
+                            </tag>
+                        </item>        -->
+                        <item>Remet le son
+                            <tag>
+                                out.action.ttsAction = "Le son est remis;
+                                out.action.CubeUrnL = "Volume:1*/VolumeService/control/";
+                                out.action.CubeAction = "SetMute";
+                                out.action.CubeTag = "isMuted*0";
+                            </tag>
+                        </item>        -->
                         <item>Quel est le volume
                             <tag>
                                 out.action.ttsAction = "Le volume est de x %";
@@ -109,7 +125,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                                 out.action.CubeTag = "key*57348";
                             </tag>
                         </item>
-                        <item>Coupe le son
+<!--                        <item>Coupe le son
                             <tag>
                                 out.action.ttsAction = "Le son est coupé";
                                 out.action.CubeUrnL = "Remote-Control:1*/RemoteControlService/control/";
@@ -124,7 +140,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                                 out.action.CubeAction = "SendKey";
                                 out.action.CubeTag = "key*57349";
                             </tag>
-                        </item>
+                        </item>        -->
 <!-- Touches Numériques -->
                         <item>Touche 0
                             <tag>
