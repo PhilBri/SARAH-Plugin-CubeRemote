@@ -17,16 +17,24 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
 <!-- Item 1 (Début de phrase) -->
                     <one-of>
 <!-- Volume (Get/Set functions) -->
-                        <item>Liste les infos des chaînes
+<!--                        <item>Liste les infos des chaînes
                             <tag>
                                 out.action.ttsAction = "Les infos sont affichées";
                                 out.action.CubeUrnL = "Channel-List:1*/ChannelListService/control/";
                                 out.action.CubeAction = "GetChannelListInfo"; 
                             </tag>
                         </item>
-                        <item>Quelle est la chaîne
+-->                     <item>Liste les infos des chaînes
                             <tag>
-                                out.action.ttsAction = "La chaîne x est affichée";
+                                out.action.ttsAction = "Les infos sont affichées";
+                                out.action.CubeUrnL = "Channel-List:1*/ChannelListService/control/";
+                                out.action.CubeAction = "GetChannelDetails";
+                                out.action.CubeTag = "locators*dvb://1.442.2329";
+                            </tag>
+                        </item>
+                       <item>Quelle est la chaîne
+                            <tag>
+                                out.action.ttsAction = "La chaîne; x est affichée";
                                 out.action.CubeUrnL = "Channel-Selection:1*/ChannelSelectionService/control/";
                                 out.action.CubeAction = "GetSelectedChannel*channelNumber";
                             </tag>
@@ -104,6 +112,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                         <item>Coupe le son
                             <tag>
                                 out.action.ttsAction = "Le son est coupé";
+                                out.action.CubeUrnL = "Remote-Control:1*/RemoteControlService/control/";
                                 out.action.CubeAction = "SendKey";
                                 out.action.CubeTag = "key*57349";
                             </tag>
