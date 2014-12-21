@@ -46,7 +46,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                                 out.action.CubeAction = "SetMute";
                                 out.action.CubeTag = "isMuted*1";
                             </tag>
-                        </item>        -->
+                        </item>
                         <item>Remet le son
                             <tag>
                                 out.action.ttsAction = "Le son est remis;
@@ -54,7 +54,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                                 out.action.CubeAction = "SetMute";
                                 out.action.CubeTag = "isMuted*0";
                             </tag>
-                        </item>        -->
+                        </item>
                         <item>Quel est le volume
                             <tag>
                                 out.action.ttsAction = "Le volume est de x %";
