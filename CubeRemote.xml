@@ -41,7 +41,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                         </item>
                         <item>Coupe le son
                             <tag>
-                                out.action.ttsAction = "Le son est coupé;
+                                out.action.ttsAction = "Le son est coupé";
                                 out.action.CubeUrnL = "Volume:1*/VolumeService/control/";
                                 out.action.CubeAction = "SetMute";
                                 out.action.CubeTag = "isMuted*1";
@@ -49,7 +49,7 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                         </item>
                         <item>Remet le son
                             <tag>
-                                out.action.ttsAction = "Le son est remis;
+                                out.action.ttsAction = "Le son est remis";
                                 out.action.CubeUrnL = "Volume:1*/VolumeService/control/";
                                 out.action.CubeAction = "SetMute";
                                 out.action.CubeTag = "isMuted*0";
