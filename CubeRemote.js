@@ -14,7 +14,7 @@ exports.init = function ( SARAH ) {
 	var config = SARAH.ConfigManager.getConfig();
 	cfg = config.modules.CubeRemote;
 
-	if ( ! cfg.Cube_IP ) return console.log( 'CubeRemote => Config [ERREUR] : ip non paramétrée !\r\n' );
+	if ( ! cfg.Cube_IP ) return console.log( 'CubeRemote => Config erreur : ip non paramétrée.\r\n' );
 
 	// Finding Cube UUID :8080/BasicDeviceDescription.xml 	:49152/stbdevice.xml
 	var req = require( 'http' ).get ( 'http://' + cfg.Cube_IP + ':49152/stbdevice.xml', function ( res ) {
@@ -27,7 +27,7 @@ exports.init = function ( SARAH ) {
 		});
     });
 
-    req.on ( 'error', function ( error ) { console.log ( '\nCubeRemote => Config [ERREUR] : [ip Incorrecte]' );});
+    req.on ( 'error', function ( error ) { console.log ( '\nCubeRemote => Config erreur : ip Incorrecte.' );});
 }
 
 exports.action = function ( data , callback , config , SARAH ) {
@@ -35,7 +35,7 @@ exports.action = function ( data , callback , config , SARAH ) {
 	if ( ! cfg.Cube_IP ) return callback ({ 'tts' : 'Adresse I P non paramétrée' });
 	if ( ! cfg.Cube_UUID ) {
 
-		console.log ( '\nCubeRemote => Config [ERREUR] : UUID absent = Erreur ip ou Cube incompatible !' );
+		console.log ( '\nCubeRemote => Config erreur : ip incorrecte ou Cube incompatible. (UUID absent)' );
 		return callback ({ 'tts' : 'I P incorrecte ou Cube incompatible avec SARAH' });
 	}
 
@@ -48,7 +48,7 @@ exports.action = function ( data , callback , config , SARAH ) {
 	var CubeResp3 	= (data.CubeAction.split('*').length > 3) ? data.CubeAction.split('*')[3] : '';
 	var body;
 
-	console.log ( CubeResp + ' ' + CubeResp2 + ' ' + CubeResp3 );
+	//console.log ( CubeResp + ' ' + CubeResp2 + ' ' + CubeResp3 );
 	
 	if ( typeof data.CubeTag != 'undefined') var CubeTag = data.CubeTag.split('*');
 
@@ -113,6 +113,7 @@ exports.action = function ( data , callback , config , SARAH ) {
 				strRet += ' : ' + error;
 				data.ttsAction = "L'action a échouée";
 			}
+
 			console.log ( strRet + '\n' );
 			callback ({ 'tts' : data.ttsAction });
 
