@@ -104,7 +104,7 @@ exports.action = function ( data , callback , config , SARAH ) {
 						strRet = '\nCubeRemote => Chaîne N° : ' + resp3 + ' Locator : ' + resp2 + ' ListId : ' + resp;
 					} else {
 						data.ttsAction = data.ttsAction.replace ( 'x', resp[1] );
-          				strRet += ' : ' + data.ttsAction
+          				strRet += ' : ' + data.ttsAction;
           			}
 				}
 
