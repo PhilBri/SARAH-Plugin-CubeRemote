@@ -92,8 +92,8 @@ exports.action = function ( data , callback , config , SARAH ) {
 
 				var	body 	= body.replace( /&lt;/gm, '<' ).replace( /&gt;/gm, '>' ),
 					ret 	= /<executionStatus>(.*?)<\/executionStatus>/gmi.exec( body ),
-					resp 	= new RegExp ( '<' + CubeResp + '>(.*?)<\/' + CubeResp + '>').exec( body );
-					resp2 	= new RegExp ( '<' + CubeResp2 + '>(.*?)<\/' + CubeResp2 + '>').exec( body );
+					resp 	= new RegExp ( '<' + CubeResp + '>(.*?)<\/' + CubeResp + '>').exec( body ),
+					resp2 	= new RegExp ( '<' + CubeResp2 + '>(.*?)<\/' + CubeResp2 + '>').exec( body ),
 					resp3 	= new RegExp ( '<' + CubeResp3 + '>(.*?)<\/' + CubeResp3 + '>').exec( body );
 
 				if ( ret != null ) strRet += ' : Code exec = ' + ret[1];
@@ -107,7 +107,7 @@ exports.action = function ( data , callback , config , SARAH ) {
           				strRet += ' : ' + data.ttsAction
           			}
 				}
-				
+
 			} else {
 
 				strRet += ' : ' + error;
