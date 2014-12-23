@@ -1,5 +1,5 @@
 /*__________________________________________________
-|                CubeRemote v1.04b                  |
+|                CubeRemote v1.06b                  |
 |                                                   |
 | Author : Boris Loizeau & Phil Bri (12/2014)       |
 |    (See http://encausse.wordpress.com/s-a-r-a-h/) |
@@ -44,6 +44,8 @@ exports.action = function ( data , callback , config , SARAH ) {
 	var CubeUrl 	= data.CubeUrnL.split('*')[1];
 	var CubeAction 	= data.CubeAction.split('*')[0];
 	var CubeResp 	= (data.CubeAction.split('*').length > 1) ? data.CubeAction.split('*')[1] : '';
+	var CubeResp2	= (data.CubeAction.split('*').length > 2) ? data.CubeAction.split('*')[2] : '';
+	var CubeResp3	= (data.CubeAction.split('*').length > 3) ? data.CubeAction.split('*')[3] : '';
 	var body;
 	
 	if ( typeof data.CubeTag != 'undefined') var CubeTag = data.CubeTag.split('*');
@@ -90,14 +92,22 @@ exports.action = function ( data , callback , config , SARAH ) {
 
 				var	body 	= body.replace( /&lt;/gm, '<' ).replace( /&gt;/gm, '>' ),
 					ret 	= /<executionStatus>(.*?)<\/executionStatus>/gmi.exec( body ),
-					ret2 	= new RegExp ( '<' + CubeResp + '>(.*?)<\/' + CubeResp + '>').exec( body );
+					resp 	= new RegExp ( '<' + CubeResp + '>(.*?)<\/' + CubeResp + '>').exec( body );
+					resp2 	= new RegExp ( '<' + CubeResp2 + '>(.*?)<\/' + CubeResp2 + '>').exec( body );
+					resp3 	= new RegExp ( '<' + CubeResp3 + '>(.*?)<\/' + CubeResp3 + '>').exec( body );
 
 				if ( ret != null ) strRet += ' : Code exec = ' + ret[1];
 
-				if ( CubeResp != '' && ret2 != null ) {
-					data.ttsAction = data.ttsAction.replace ( 'x', ret2[1] )
-          			strRet += ' : ' + data.ttsAction;
+				if ( CubeResp != '' && resp != null ) {
+
+					if ( CubeResp2 != '' ) {
+						strRet = '\nCubeRemote => Chaîne N° : ' + resp3 + ' Locator : ' + resp2 + ' ListId : ' + resp;
+					} else {
+						data.ttsAction = data.ttsAction.replace ( 'x', resp[1] );
+          				strRet += ' : ' + data.ttsAction
+          			}
 				}
+				
 			} else {
 
 				strRet += ' : ' + error;
