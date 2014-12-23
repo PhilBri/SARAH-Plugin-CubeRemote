@@ -25,11 +25,11 @@ CubeAction => 2 valeurs séparées par '*' [CommandeCube*RetourCube] RetourCube 
                             </tag>
                         </item>
 -->                     
-                       <item>Mémorise la chaîne
+                        <item>Mémorise la chaîne
                             <tag>
                                 out.action.ttsAction = "La chaîne. x est mémorisée";
                                 out.action.CubeUrnL = "Channel-Selection:1*/ChannelSelectionService/control/";
-                                out.action.CubeAction = "GetSelectedChannel*channelListId*channelNumber*locator";
+                                out.action.CubeAction = "GetSelectedChannel*channelNumber*channelListId*locator";
                             </tag>
                         </item>
                         <item>Liste les infos des chaînes

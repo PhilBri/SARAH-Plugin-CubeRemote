@@ -44,9 +44,11 @@ exports.action = function ( data , callback , config , SARAH ) {
 	var CubeUrl 	= data.CubeUrnL.split('*')[1];
 	var CubeAction 	= data.CubeAction.split('*')[0];
 	var CubeResp 	= (data.CubeAction.split('*').length > 1) ? data.CubeAction.split('*')[1] : '';
-	var CubeResp2	= (data.CubeAction.split('*').length > 2) ? data.CubeAction.split('*')[2] : '';
-	var CubeResp3	= (data.CubeAction.split('*').length > 3) ? data.CubeAction.split('*')[3] : '';
+	var CubeResp2 	= (data.CubeAction.split('*').length > 2) ? data.CubeAction.split('*')[2] : '';
+	var CubeResp3 	= (data.CubeAction.split('*').length > 3) ? data.CubeAction.split('*')[3] : '';
 	var body;
+
+	console.log ( CubeResp + ' ' + CubeResp2 + ' ' + CubeResp3 );
 	
 	if ( typeof data.CubeTag != 'undefined') var CubeTag = data.CubeTag.split('*');
 
@@ -65,8 +67,6 @@ exports.action = function ( data , callback , config , SARAH ) {
 	body +=	'</s:Envelope>\n\r';
 
 	body = body.replace ( 'Code_Appairage', cfg.Code_Appairage );
-
-	console.log ('\nCubeAction = ' + CubeAction + ' CubeResp = ' + CubeResp+'\n');
 
 	//return;// callback ({ 'tts' : 'ok'}); // for test only
 
@@ -92,20 +92,20 @@ exports.action = function ( data , callback , config , SARAH ) {
 
 				var	body 	= body.replace( /&lt;/gm, '<' ).replace( /&gt;/gm, '>' ),
 					ret 	= /<executionStatus>(.*?)<\/executionStatus>/gmi.exec( body ),
-					resp 	= new RegExp ( '<' + CubeResp + '>(.*?)<\/' + CubeResp + '>').exec( body ),
-					resp2 	= new RegExp ( '<' + CubeResp2 + '>(.*?)<\/' + CubeResp2 + '>').exec( body ),
-					resp3 	= new RegExp ( '<' + CubeResp3 + '>(.*?)<\/' + CubeResp3 + '>').exec( body );
+					resp 	= new RegExp ( '<' + CubeResp + '>(.*?)<\/' + CubeResp + '>', 'gm' ).exec( body ),
+					resp2 	= new RegExp ( '<' + CubeResp2 + '>(.*?)<\/' + CubeResp2 + '>', 'gm' ).exec( body ),
+					resp3 	= new RegExp ( '<' + CubeResp3 + '>(.*?)<\/' + CubeResp3 + '>', 'gm' ).exec( body );
 
 				if ( ret != null ) strRet += ' : Code exec = ' + ret[1];
 
 				if ( CubeResp != '' && resp != null ) {
 
-					if ( CubeResp2 != '' ) {
-						strRet = '\nCubeRemote => Chaîne N° : ' + resp3 + ' Locator : ' + resp2 + ' ListId : ' + resp;
+					if ( CubeResp2 != '' && CubeResp3 != '' ) {
+						strRet = '\nCubeRemote => Mémorisation de la chaîne : ' + resp[1] + ' Id : ' + resp2[1] + ' locator : ' + resp3[1];
 					} else {
-						data.ttsAction = data.ttsAction.replace ( 'x', resp[1] );
           				strRet += ' : ' + data.ttsAction;
-          			}
+					}
+					data.ttsAction = data.ttsAction.replace ( 'x', resp[1] );
 				}
 
 			} else {
