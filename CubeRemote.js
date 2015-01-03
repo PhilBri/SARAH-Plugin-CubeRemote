@@ -8,21 +8,22 @@
 |___________________________________________________|
 */
 var cfg;
+var Cube = {};
 
 // Making xml body
-function make_CubeBody ( CubeAction, CubeUrn, CubeTag, clbk ) {
+function make_CubeBody ( Cube, clbk ) {
 
     var body  = '<?xml version="1.0" encoding="utf-8"?>'
         body += '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
         body +=   '<s:Body>'
-        body +=     '<u:'+ CubeAction +' xmlns:u="urn:'+ CubeUrn +'">'
-        body +=       '<uuid>' + cfg.Cube_UUID + '</uuid>';
+        body +=     '<u:'+ Cube.Action +' xmlns:u="urn:'+ Cube.Urn +'">'
+        body +=       '<uuid>' + Cube.UUID + '</uuid>';
 
-        while ( typeof CubeTag != 'undefined' && CubeTag.length != 0 ) {
-        body +=       '<'+ CubeTag.slice(0,1) +'>' + CubeTag.slice(1,2) + '</'+ CubeTag.shift() +'>'; CubeTag.shift(); }
+        while ( typeof Cube.Tag != 'undefined' && Cube.Tag.length != 0 ) {
+        body +=       '<'+ Cube.Tag.slice(0,1) +'>' + Cube.Tag.slice(1,2) + '</'+ Cube.Tag.shift() +'>'; Cube.Tag.shift(); }
 
-        body +=       '<executionStatus>0</executionStatus>'
-        body +=     '</u:'+ CubeAction +">"
+        body +=       '<executionStatus>0</executionStatus>' // ligne à effacer pour tests !!!
+        body +=     '</u:'+ Cube.Action +">"
         body +=   '</s:Body>'
         body += '</s:Envelope>\n\r';
 
@@ -31,12 +32,12 @@ function make_CubeBody ( CubeAction, CubeUrn, CubeTag, clbk ) {
 }
 
 // Write Channels in CubeRemote.xml
-function write_XML_Channel ( ttsAction, SpecialAction, Chnl, Id, Loc, cb ) {
+function write_XML_Channel ( Cube, Chnl, Id, Loc, cb ) {
 
     var fs          = require ('fs');
     var file        = __dirname + "\\" + 'cuberemote.xml';
     var xml         = fs.readFileSync ( file, 'utf8' );
-    var retXml      = ttsAction;
+    var retXml      = Cube.ttsAction;
     var tab         = '\r\t\t\t\t';
     var mem_CubeTag = 'out.action.CubeTag = "channelListId¤' + Id + '¤locator¤' + Loc + '¤channelNumber¤' + Chnl + '";';
     var cfg_xml     = tab + '<item>Met la chaîne ' + Chnl
@@ -48,7 +49,7 @@ function write_XML_Channel ( ttsAction, SpecialAction, Chnl, Id, Loc, cb ) {
                     + tab + '\t</tag>'
                     + tab + '</item>\r';
 
-    switch ( SpecialAction ) {
+    switch ( Cube.SpecialAction ) {
         case 'deleteAll' :
             var write_Xml   = xml.replace ( /§[^§]+§/gm, "§ -->\n<!-- §" );
             break;
@@ -70,33 +71,36 @@ function write_XML_Channel ( ttsAction, SpecialAction, Chnl, Id, Loc, cb ) {
 }
 
 // Sending SOAP request
-function sendCube ( CubeUrl, CubeUrn, CubeAction, CubeResp, sendBody, flag, retCmd ) {
+function sendCube ( Cube, retCmd ) {
 
-    if ( flag == false ) return retCmd ({ 'retCmd' : 0 });
     var retTab = {};
+    if ( Cube.Action == 'dummy' ) {
+        retTab.retCmd = 0;
+        return retCmd ( retTab );
+    }
+
     var request = require ( 'request' );
 
     request ({
-        uri     :   'http://' + cfg.Cube_IP + ':49152' + CubeUrl,
+        uri     :   'http://' + cfg.Cube_IP + ':49152' + Cube.Url,
         method  :   'POST',
-        headers : { 'Content-length' :   sendBody.length,
+        headers : { 'Content-length' :   Cube.Body.length,
                     'Content-type'   :   'text/xml; charset="utf-8"',
-                    'SOAPACTION'     :   '"urn:' + CubeUrn + CubeAction +'"' },
-        body    :   sendBody
+                    'SOAPACTION'     :   '"urn:' + Cube.Urn + Cube.Action +'"' },
+        body    :   Cube.Body
     }, function ( error , response , retBody ) {
 
         if ( ! error && response.statusCode == 200 ) {
 
             retBody = retBody.replace( /&lt;/gm, '<' ).replace( /&gt;/gm, '>' );
-            ( retTab['retCmd'] = /<executionStatus>(.*?)<\/executionStatus>/gm.exec( retBody )) ? retTab['retCmd'] = retTab['retCmd'][1] : null;
+            ( retTab.retCmd = /<executionStatus>(.*?)<\/executionStatus>/gm.exec( retBody )) ? retTab.retCmd = retTab.retCmd[1] : null;
 
-            while ( CubeResp.length )
-                retTab[CubeResp[0]] = ( new RegExp ( '<' + CubeResp[0] + '>(.*?)<\/' + CubeResp.shift() + '>', 'gm' ).exec( retBody )[1]);
+            while ( Cube.Resp.length )
+                retTab[Cube.Resp[0]] = ( new RegExp ( '<' + Cube.Resp[0] + '>(.*?)<\/' + Cube.Resp.shift() + '>', 'gm' ).exec( retBody )[1]);
+            if ( Cube.Action == 'RegisterSmartPhone' && !cfg.Code_Appairage ) retTab.retCmd = null;//'Code appairage absent';
+        } else retTab.retCmd = null;
 
-            if ( CubeAction == 'RegisterSmartPhone' && cfg.Code_Appairage == '') retTab['erreur'] = 'Code appairage absent';
-        } else retTab[ 'erreur' ] = error;
-
-        console.log ( '\nRetour pour "debug" :\r' + retBody + '\n' ); // debug
+        console.log ( '\rRetour pour "debug" :\r' + retBody + '\n' ); // debug
         retCmd ( retTab );
     });
 }
@@ -105,59 +109,60 @@ exports.init = function ( SARAH ) {
 
 	var config = SARAH.ConfigManager.getConfig();
 	cfg = config.modules.CubeRemote;
-	if ( ! cfg.Cube_IP ) return console.log( 'CubeRemote => Config erreur : ip non paramétrée.\r\n' );
+	if ( ! cfg.Cube_IP ) return console.log ( 'CubeRemote => Config erreur : ip non paramétrée.\r\n' );
 
 	// Finding Cube UUID
 	var req = require( 'http' ).get ( 'http://' + cfg.Cube_IP + ':49152/stbdevice.xml', function ( res ) {
 		res.setEncoding ( 'utf-8' );
 		res.on ( 'data', function ( chunk ) {
-			if ( cfg.Cube_UUID = /<UDN>(.*?)<\/UDN>/gmi.exec( chunk ) ) cfg.Cube_UUID = cfg.Cube_UUID[1]
+			if ( Cube.UUID = /<UDN>(.*?)<\/UDN>/gmi.exec( chunk ) ) Cube.UUID = Cube.UUID[1]
             else return console.log ( '\nCubeRemote => Config erreur : ip incorrecte.' );
 		});
     });
-    req.on ( 'error', function ( error ) { console.log ( '\nCubeRemote => Erreur de requète : ' + error ); });
+    req.on ( 'error', function ( error ) { console.log ( '\nCubeRemote => Erreur de requète : ' + error ) });
+    req.end();
 }
 
 exports.action = function ( data , callback , config , SARAH ) {
 
 	// config
 	if ( ! cfg.Cube_IP ) return callback ({ 'tts' : 'Adresse I P non paramétrée.' });
-	if ( ! cfg.Cube_UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
-	console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + ' ' + cfg.Cube_UUID + '\n' );
+	if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
+	console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + ' ' + Cube.UUID + '\n' );
 
 	// xml data's
-	var CubeUrn     = 'schemas-nds-com:service:' + data.CubeUrnL.split('¤')[0] + '#';
-	var CubeUrl     = data.CubeUrnL.split('¤')[1];
-	var CubeResp    = data.CubeAction.split('¤');
-	var CubeAction  = CubeResp.shift();
-	var body;
+	Cube.Urn           = 'schemas-nds-com:service:' + data.CubeUrnL.split('¤')[0] + '#';
+	Cube.Url           = data.CubeUrnL.split('¤')[1];
+	Cube.Resp          = data.CubeAction.split('¤');
+	Cube.Action        = Cube.Resp.shift();
+    Cube.ttsAction     = data.ttsAction;
+    Cube.SpecialAction = data.SpecialAction;
 	
-	( typeof data.CubeTag != 'undefined' ) ? CubeTag = data.CubeTag.split('¤') : CubeTag = data.CubeTag ;
+	( data.CubeTag ) ? Cube.Tag = data.CubeTag.split('¤') : Cube.Tag = data.CubeTag ;
 
-	make_CubeBody ( CubeAction, CubeUrn, CubeTag, function ( body ) {
+	make_CubeBody ( Cube, function ( body ) {
 
-		var retStr = '\nCuberemote => ' + CubeAction + ' ';
-		console.log ( 'Sending SOAP ...\r' + body + '\n'); // debug
-		( data.SpecialAction == 'deleteAll' ) ? sendFlag = false : sendFlag = true;
+        Cube['Body'] = body;
+		console.log ( 'Sending SOAP ...\r' + Cube.Body + '\r' ); // debug
 
-		sendCube( CubeUrl, CubeUrn, CubeAction, CubeResp, body, sendFlag, function ( retCmd ) {
+		sendCube( Cube, function ( retCmd ) {
+            
+            (Cube.SpecialAction) ? logStr = '\nCuberemote => ' + Cube.SpecialAction : logStr = '\nCuberemote => ' + Cube.Action;
 
-			if ( retCmd.erreur ) {
-				retStr += retCmd.erreur;
-				data.ttsAction = ' La commande a échouée.'
+			if ( retCmd.retCmd == null) {
+				logStr += '[erreur] : ';
+				Cube.ttsAction = 'La commande a échouée.'
 			} else {
-				(retCmd.retCmd == 0) ? retStr += '[OK] : ' : retStr += '[' + retCmd.retCmd + '] : ';
-				if ( Object.keys(retCmd)[1] != undefined) {
-					data.ttsAction = data.ttsAction.replace ( 'x', retCmd[Object.keys(retCmd)[1]] );
-                }
-				if ( data.SpecialAction ) {
-                    write_XML_Channel( data.ttsAction, data.SpecialAction, retCmd.channelNumber ,retCmd.channelListId ,retCmd.locator, function ( retXml ) {
-                        data.ttsAction = retXml;
-                    });
-                }
+				(retCmd.retCmd == 0) ? logStr += ' [OK] : ' : logStr += ' [' + retCmd.retCmd + '] : ';
+                if ( Object.keys(retCmd)[1] != undefined)
+					Cube.ttsAction = Cube.ttsAction.replace ( 'x', retCmd[Object.keys( retCmd )[1]] );
+
+				if ( Cube.SpecialAction )
+                    write_XML_Channel( Cube, retCmd.channelNumber ,retCmd.channelListId ,retCmd.locator, function ( retXml ) {
+                        Cube.ttsAction = retXml });
 			}
-			console.log ( retStr + data.ttsAction );
-			callback ({ 'tts' : data.ttsAction });
+			console.log ( logStr + Cube.ttsAction );
+			callback ({ 'tts' : Cube.ttsAction });
 		});
 	});
 }
