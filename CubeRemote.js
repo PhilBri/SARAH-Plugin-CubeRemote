@@ -1,5 +1,5 @@
 /*__________________________________________________
-|                CubeRemote v1.09b                  |
+|                CubeRemote v1.1                    |
 |                                                   |
 | Author : Boris Loizeau & Phil Bri (12/2014)       |
 |    (See http://encausse.wordpress.com/s-a-r-a-h/) |
@@ -106,18 +106,18 @@ function sendCube ( Cube, retCmd ) {
 
 exports.init = function ( SARAH ) {
 
-	var config = SARAH.ConfigManager.getConfig();
-	cfg = config.modules.CubeRemote;
-	if ( ! cfg.Cube_IP ) return console.log ( 'CubeRemote => Config erreur : ip non paramétrée.\r\n' );
+    var config = SARAH.ConfigManager.getConfig();
+    cfg = config.modules.CubeRemote;
+    if ( ! cfg.Cube_IP ) return console.log ( 'CubeRemote => Config erreur : ip non paramétrée.\r\n' );
     console.log(cfg );
 
-	// Finding Cube UUID
-	var req = require( 'http' ).get ( 'http://' + cfg.Cube_IP + ':49152/stbdevice.xml', function ( res ) {
-		res.setEncoding ( 'utf-8' );
-		res.on ( 'data', function ( chunk ) {
-			if ( Cube.UUID = /<UDN>(.*?)<\/UDN>/gmi.exec( chunk ) ) Cube.UUID = Cube.UUID[1]
-            else return console.log ( '\nCubeRemote => Config erreur : ip incorrecte / UUID non trouvé.' );
-		});
+    // Finding Cube UUID
+    var req = require( 'http' ).get ( 'http://' + cfg.Cube_IP + ':49152/stbdevice.xml', function ( res ) {
+        res.setEncoding ( 'utf-8' );
+        res.on ( 'data', function ( chunk ) {
+            if ( Cube.UUID = /<UDN>(.*?)<\/UDN>/gmi.exec( chunk ) ) Cube.UUID = Cube.UUID[1]
+                else return console.log ( '\nCubeRemote => Config erreur : ip incorrecte / UUID non trouvé.' );
+        });
     });
     req.on ( 'error', function ( error ) { console.log ( '\nCubeRemote => Erreur de requète : ' + error ) });
     //req.end();
@@ -125,45 +125,45 @@ exports.init = function ( SARAH ) {
 
 exports.action = function ( data , callback , config , SARAH ) {
 
-	// config
-	if ( ! cfg.Cube_IP ) return callback ({ 'tts' : 'Adresse I P non paramétrée.' });
-	//if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
-	console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + ' ' + Cube.UUID + '\n' );
+    // config
+    if ( ! cfg.Cube_IP ) return callback ({ 'tts' : 'Adresse I P non paramétrée.' });
+    //if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
+    console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + ' ' + Cube.UUID + '\n' );
 
-	// xml data's
-	Cube.Urn           = 'schemas-nds-com:service:' + data.CubeUrnL.split('¤')[0] + '#';
-	Cube.Url           = data.CubeUrnL.split('¤')[1];
-	Cube.Resp          = data.CubeAction.split('¤');
-	Cube.Action        = Cube.Resp.shift();
+    // xml data's
+    Cube.Urn           = 'schemas-nds-com:service:' + data.CubeUrnL.split('¤')[0] + '#';
+    Cube.Url           = data.CubeUrnL.split('¤')[1];
+    Cube.Resp          = data.CubeAction.split('¤');
+    Cube.Action        = Cube.Resp.shift();
     Cube.ttsAction     = data.ttsAction;
     Cube.SpecialAction = data.SpecialAction;
-	
-	( data.CubeTag ) ? Cube.Tag = data.CubeTag.split('¤') : Cube.Tag = data.CubeTag ;
 
-	// Main
+    ( data.CubeTag ) ? Cube.Tag = data.CubeTag.split('¤') : Cube.Tag = data.CubeTag ;
+
+    // Main
     make_CubeBody ( Cube, function ( body ) {
 
         Cube['Body'] = body;
-		console.log ( 'Sending SOAP ...\r' + Cube.Body + '\r' ); // debug
+        console.log ( 'Sending SOAP ...\r' + Cube.Body + '\r' ); // debug
 
-		sendCube( Cube, function ( retCmd ) {
-            
+        sendCube( Cube, function ( retCmd ) {
+
             (Cube.SpecialAction) ? logStr = '\nCuberemote => ' + Cube.SpecialAction : logStr = '\nCuberemote => ' + Cube.Action;
 
-			if ( retCmd.retCmd == null) {
-				logStr += '[erreur] : ';
-				Cube.ttsAction = 'La commande a échouée.'
-			} else {
-				(retCmd.retCmd == 0) ? logStr += ' [OK] : ' : logStr += ' [' + retCmd.retCmd + '] : ';
+            if ( retCmd.retCmd == null) {
+                logStr += '[erreur] : ';
+                Cube.ttsAction = 'La commande a échouée.'
+            } else {
+                (retCmd.retCmd == 0) ? logStr += ' [OK] : ' : logStr += ' [' + retCmd.retCmd + '] : ';
                 if ( Object.keys(retCmd)[1] != undefined)
-					Cube.ttsAction = Cube.ttsAction.replace ( 'x', retCmd[Object.keys( retCmd )[1]] );
+                    Cube.ttsAction = Cube.ttsAction.replace ( 'x', retCmd[Object.keys( retCmd )[1]] );
 
-				if ( Cube.SpecialAction )
+                if ( Cube.SpecialAction )
                     write_XML_Channel( Cube, retCmd.channelNumber ,retCmd.channelListId ,retCmd.locator, function ( retXml ) {
                         Cube.ttsAction = retXml });
-			}
-			console.log ( logStr + Cube.ttsAction );
-			callback ({ 'tts' : Cube.ttsAction });
+            }
+            console.log ( logStr + Cube.ttsAction );
+            callback ({ 'tts' : Cube.ttsAction });
 		});
 	});
 }
