@@ -108,8 +108,7 @@ exports.init = function ( SARAH ) {
 
     var config = SARAH.ConfigManager.getConfig();
     cfg = config.modules.CubeRemote;
-    if ( ! cfg.Cube_IP ) return console.log ( 'CubeRemote => Config erreur : ip non paramétrée.\r\n' );
-    console.log(cfg );
+    if ( ! cfg.Cube_IP ) return console.log ( 'CubeRemote => Config erreur : ip non paramétrée.\n' );
 
     // Finding Cube UUID
     var req = require( 'http' ).get ( 'http://' + cfg.Cube_IP + ':49152/stbdevice.xml', function ( res ) {
@@ -127,7 +126,7 @@ exports.action = function ( data , callback , config , SARAH ) {
 
     // config
     if ( ! cfg.Cube_IP ) return callback ({ 'tts' : 'Adresse I P non paramétrée.' });
-    //if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
+    if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
     console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + ' ' + Cube.UUID + '\n' );
 
     // xml data's
@@ -149,18 +148,22 @@ exports.action = function ( data , callback , config , SARAH ) {
         sendCube( Cube, function ( retCmd ) {
 
             (Cube.SpecialAction) ? logStr = '\nCuberemote => ' + Cube.SpecialAction : logStr = '\nCuberemote => ' + Cube.Action;
-
-            if ( retCmd.retCmd == null) {
-                logStr += '[erreur] : ';
-                Cube.ttsAction = 'La commande a échouée.'
-            } else {
-                (retCmd.retCmd == 0) ? logStr += ' [OK] : ' : logStr += ' [' + retCmd.retCmd + '] : ';
-                if ( Object.keys(retCmd)[1] != undefined)
-                    Cube.ttsAction = Cube.ttsAction.replace ( 'x', retCmd[Object.keys( retCmd )[1]] );
-
-                if ( Cube.SpecialAction )
-                    write_XML_Channel( Cube, retCmd.channelNumber ,retCmd.channelListId ,retCmd.locator, function ( retXml ) {
-                        Cube.ttsAction = retXml });
+            switch (retCmd.retCmd) {
+                case null :
+                    logStr += '[erreur] : ';
+                    Cube.ttsAction = 'La commande a échouée.';
+                    break;
+                case -1 :
+                    logStr += '[' + retCmd.retCmd + '] : ';
+                    Cube.ttsAction = 'Le Cube n\'est pas appairé.';
+                    break;
+                default :
+                    logStr += ' [OK] : ';
+                    if ( Object.keys(retCmd)[1] != undefined)
+                        Cube.ttsAction = Cube.ttsAction.replace ( 'x', retCmd[Object.keys( retCmd )[1]] );
+                    if ( Cube.SpecialAction )
+                        write_XML_Channel( Cube, retCmd.channelNumber ,retCmd.channelListId ,retCmd.locator, function ( retXml ) {
+                            Cube.ttsAction = retXml });
             }
             console.log ( logStr + Cube.ttsAction );
             callback ({ 'tts' : Cube.ttsAction });
