@@ -126,7 +126,7 @@ exports.action = function ( data , callback , config , SARAH ) {
 
     // config
     if ( ! cfg.Cube_IP ) return callback ({ 'tts' : 'Adresse I P non paramétrée.' });
-    if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
+    if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte (UUID absent)' });
     console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + ' ' + Cube.UUID + '\n' );
 
     // xml data's
