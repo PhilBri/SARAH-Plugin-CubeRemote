@@ -22,7 +22,6 @@ function make_CubeBody ( Cube, clbk ) {
         while ( typeof Cube.Tag != 'undefined' && Cube.Tag.length != 0 ) {
         body +=       '<'+ Cube.Tag.slice(0,1) +'>' + Cube.Tag.slice(1,2) + '</'+ Cube.Tag.shift() +'>'; Cube.Tag.shift(); }
 
-        body +=       '<executionStatus>0</executionStatus>' // ligne à effacer pour tests !!!
         body +=     '</u:'+ Cube.Action +">"
         body +=   '</s:Body>'
         body += '</s:Envelope>\n\r';
@@ -97,7 +96,7 @@ function sendCube ( Cube, retCmd ) {
 
             while ( Cube.Resp.length )
                 retTab[Cube.Resp[0]] = ( new RegExp ( '<' + Cube.Resp[0] + '>(.*?)<\/' + Cube.Resp.shift() + '>', 'gm' ).exec( retBody )[1]);
-            if ( Cube.Action == 'RegisterSmartPhone' && !cfg.Code_Appairage ) retTab.retCmd = null;//'Code appairage absent';
+            if ( Cube.Action == 'RegisterSmartPhone' && ! cfg.Code_Appairage ) retTab.retCmd = null;//'Code appairage absent';
         } else retTab.retCmd = null;
 
         console.log ( '\rRetour pour "debug" :\r' + retBody + '\n' ); // debug
@@ -110,24 +109,25 @@ exports.init = function ( SARAH ) {
 	var config = SARAH.ConfigManager.getConfig();
 	cfg = config.modules.CubeRemote;
 	if ( ! cfg.Cube_IP ) return console.log ( 'CubeRemote => Config erreur : ip non paramétrée.\r\n' );
+    console.log(cfg );
 
 	// Finding Cube UUID
 	var req = require( 'http' ).get ( 'http://' + cfg.Cube_IP + ':49152/stbdevice.xml', function ( res ) {
 		res.setEncoding ( 'utf-8' );
 		res.on ( 'data', function ( chunk ) {
 			if ( Cube.UUID = /<UDN>(.*?)<\/UDN>/gmi.exec( chunk ) ) Cube.UUID = Cube.UUID[1]
-            else return console.log ( '\nCubeRemote => Config erreur : ip incorrecte.' );
+            else return console.log ( '\nCubeRemote => Config erreur : ip incorrecte / UUID non trouvé.' );
 		});
     });
     req.on ( 'error', function ( error ) { console.log ( '\nCubeRemote => Erreur de requète : ' + error ) });
-    req.end();
+    //req.end();
 }
 
 exports.action = function ( data , callback , config , SARAH ) {
 
 	// config
 	if ( ! cfg.Cube_IP ) return callback ({ 'tts' : 'Adresse I P non paramétrée.' });
-	if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
+	//if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte.' });
 	console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + ' ' + Cube.UUID + '\n' );
 
 	// xml data's
@@ -140,7 +140,8 @@ exports.action = function ( data , callback , config , SARAH ) {
 	
 	( data.CubeTag ) ? Cube.Tag = data.CubeTag.split('¤') : Cube.Tag = data.CubeTag ;
 
-	make_CubeBody ( Cube, function ( body ) {
+	// Main
+    make_CubeBody ( Cube, function ( body ) {
 
         Cube['Body'] = body;
 		console.log ( 'Sending SOAP ...\r' + Cube.Body + '\r' ); // debug
