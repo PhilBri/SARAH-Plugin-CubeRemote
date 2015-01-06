@@ -119,7 +119,6 @@ function sendCube ( Cube, retCmd ) {
         body    :   Cube.Body
 
     }, function ( error , response , retBody ) {
-
         if ( ! error && response.statusCode == 200 ) {
 
             retBody = retBody.replace( /&lt;/gm, '<' ).replace( /&gt;/gm, '>' );
@@ -128,7 +127,6 @@ function sendCube ( Cube, retCmd ) {
             while ( Cube.Resp.length )
                 retTab[Cube.Resp[0]] = ( new RegExp ( '<' + Cube.Resp[0] + '>(.*?)<\/' + Cube.Resp.shift() + '>', 'gm' ).exec( retBody )[1]);
 
-            if ( Cube.Action == 'RegisterSmartPhone' && ! cfg.Code_Appairage ) retTab.retCmd = null; //'Code appairage absent';
         } else retTab.retCmd = null;
         console.log ( '\rRetour pour "debug" :\r' + retBody + '\n' ); // debug
         retCmd ( retTab );
@@ -166,6 +164,7 @@ exports.action = function ( data , callback , config , SARAH ) {
     Cube.Action        = Cube.Resp.shift();
     Cube.ttsAction     = data.ttsAction;
     Cube.SpecialAction = data.SpecialAction;
+    Cube.Code_Appairage = undefined;
 
     ( data.CubeTag ) ? Cube.Tag = data.CubeTag.split ('¤') : Cube.Tag = data.CubeTag;
 
@@ -184,15 +183,15 @@ exports.action = function ( data , callback , config , SARAH ) {
             ( Cube.SpecialAction ) ? logStr = '\nCuberemote => ' + Cube.SpecialAction : logStr = '\nCuberemote => ' + Cube.Action;
             switch ( retCube.retCmd ) {
                 case null :
-                    logStr += ' [Erreur = '+ retCube.retCmd +'] : ';
+                    logStr += ' [Erreur = ';
                     Cube.ttsAction = 'La commande a échouée.';
                     break;
-                case -1 :
-                    logStr += ' [Erreur = ' + retCube.retCmd + '] : ';
+                case '-1' :
+                    logStr += ' [Erreur = ';
                     Cube.ttsAction = 'Le Cube n\'est pas appairé.';
                     break;
-                case 0 :
-                    logStr += ' [OK = ' + retCube.retCmd + '] : ';
+                case '0' :
+                    logStr += ' [OK = ';
                     if ( Object.keys( retCube )[1] != undefined)
                         Cube.ttsAction = Cube.ttsAction.replace ( 'x', retCube[Object.keys( retCube )[1]] );
                     if ( Cube.SpecialAction )
@@ -200,11 +199,13 @@ exports.action = function ( data , callback , config , SARAH ) {
                             Cube.ttsAction = retXml });
                     break;
                 default :
-                    logStr += ' [ ? = ' + retCube.retCmd + '] : ';
+                    logStr += ' [ ? = ';
                     Cube.ttsAction = 'Erreur inconnue.';
             }
-            console.log ( logStr + Cube.ttsAction );
-            callback ({ 'tts' : Cube.ttsAction });
+            console.log ( logStr + + retCube.retCmd + '] : ' + Cube.ttsAction );
+            SARAH.speak(Cube.ttsAction);
+            //callback ({ 'tts' : Cube.ttsAction });
 		});
 	});
+callback({});
 }
