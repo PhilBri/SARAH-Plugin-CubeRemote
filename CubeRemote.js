@@ -12,32 +12,33 @@ var cfg,
     Cube = {};
 
 // Code asking
-function ask_Code_Appairage ( callback, SARAH, nbDigits, clbkCode ) { // nbDigits
+function ask_Code_Appairage ( callback, SARAH, nbDigits, clbkCode ) {
 
     if (Cube.Action != 'RegisterSmartPhone') clbkCode ('')
     else {
-        ( Cube.Code_Appairage == undefined ) ? str = "Dictez les chiffres du code un par un, puis dites terminé" : str = ''; // nbDigits
+        ( nbDigits == 0 ) ? str = "Dictez les chiffres du code un par un, ou dites annuler" : str = '';
         SARAH.askme ( str, {
             "un" :'1', "deux":'2', "trois":'3', "quatre":'4', "cinq":'5', "six":'6', "sept":'7', "huit":'8', "neuf":'9', "zéro":'0',
-            "terminé":'terminé' }, 10000, function( answer, end ){
+            "annuler":'annuler' }, 10000, function( answer, end ){
 
             end();
-            if ( answer != 'terminé' ) {
+            if ( answer != 'annuler' ) {
                 ( Cube.Code_Appairage == undefined ) ? Cube.Code_Appairage = answer : Cube.Code_Appairage += answer;
                 console.log( '\nRéponse = ' + answer + '\n' );
 
-                //if ( ++nbDigits == 4 ) clbkCode ( 'Le code est ' + Cube.Code_Appairage )
-                //else {
-                    SARAH.speak ( answer + ', Chiffre suivant ou terminé' );
+                if ( ++nbDigits == 4 ) {
+                    clbkCode ( 'Le code est ' + Cube.Code_Appairage );
+                }
+                else {
+                    SARAH.speak ( answer + ', Chiffre suivant' );
                     ask_Code_Appairage ( callback, SARAH, nbDigits, clbkCode );
-                //}
+                }
             } else {
-                //Cube.Code_Appairage = undefined;
-                //clbkCode ( "L'entrée du code est annulée" );
-                clbkCode ( 'Le code est ' + Cube.Code_Appairage);
+                Cube.Code_Appairage = undefined;
+                clbkCode ( "L'entrée du code a été annulée" );
             }
         });﻿
-        callback({});
+    callback({});
     }
 }
 
@@ -176,7 +177,7 @@ exports.action = function ( data , callback , config , SARAH ) {
         SARAH.speak ( clbkCode );
 
         Cube.Body = Cube.Body.replace( 'Code_Appairage', Cube.Code_Appairage );
-        //console.log ( 'Sending SOAP ...\r' + Cube.Body + '\r' ); // debug
+        console.log ( 'Sending SOAP ...\r' + Cube.Body + '\r' ); // debug
 
         sendCube( Cube, function ( retCube ) {
 
