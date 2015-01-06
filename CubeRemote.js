@@ -1,5 +1,5 @@
 /*__________________________________________________
-|                CubeRemote v1.2                    |
+|                CubeRemote v1.3                    |
 |                                                   |
 | Author : Boris Loizeau & PhilBri (12/2014)        |
 |    (See http://encausse.wordpress.com/s-a-r-a-h/) |
@@ -7,11 +7,42 @@
 |    Canalsat 'Le Cube' Plugin for SARAH project    |
 |___________________________________________________|
 */
+
 var cfg,
     Cube = {};
 
+// Code asking
+function ask_Code_Appairage ( callback, SARAH, nbDigits, clbkCode ) { // nbDigits
+
+    if (Cube.Action != 'RegisterSmartPhone') clbkCode ('')
+    else {
+        ( Cube.Code_Appairage == undefined ) ? str = "Dictez les chiffres du code un par un, puis dites terminé" : str = ''; // nbDigits
+        SARAH.askme ( str, {
+            "un" :'1', "deux":'2', "trois":'3', "quatre":'4', "cinq":'5', "six":'6', "sept":'7', "huit":'8', "neuf":'9', "zéro":'0',
+            "terminé":'terminé' }, 10000, function( answer, end ){
+
+            end();
+            if ( answer != 'terminé' ) {
+                ( Cube.Code_Appairage == undefined ) ? Cube.Code_Appairage = answer : Cube.Code_Appairage += answer;
+                console.log( '\nRéponse = ' + answer + '\n' );
+
+                //if ( ++nbDigits == 4 ) clbkCode ( 'Le code est ' + Cube.Code_Appairage )
+                //else {
+                    SARAH.speak ( answer + ', Chiffre suivant ou terminé' );
+                    ask_Code_Appairage ( callback, SARAH, nbDigits, clbkCode );
+                //}
+            } else {
+                //Cube.Code_Appairage = undefined;
+                //clbkCode ( "L'entrée du code est annulée" );
+                clbkCode ( 'Le code est ' + Cube.Code_Appairage);
+            }
+        });﻿
+        callback({});
+    }
+}
+
 // Making xml body
-function make_CubeBody ( Cube, clbk ) {
+function make_CubeBody ( Cube ) {
 
     var body  = '<?xml version="1.0" encoding="utf-8"?>'
         body += '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
@@ -25,9 +56,7 @@ function make_CubeBody ( Cube, clbk ) {
         body +=     '</u:'+ Cube.Action +">"
         body +=   '</s:Body>'
         body += '</s:Envelope>\n\r';
-
-        body = body.replace( 'Code_Appairage', cfg.Code_Appairage );
-        clbk ( body );
+    return body;
 }
 
 // Write Channels in CubeRemote.xml
@@ -100,7 +129,7 @@ function sendCube ( Cube, retCmd ) {
 
             if ( Cube.Action == 'RegisterSmartPhone' && ! cfg.Code_Appairage ) retTab.retCmd = null; //'Code appairage absent';
         } else retTab.retCmd = null;
-        // console.log ( '\rRetour pour "debug" :\r' + retBody + '\n' ); // debug
+        console.log ( '\rRetour pour "debug" :\r' + retBody + '\n' ); // debug
         retCmd ( retTab );
     });
 }
@@ -127,8 +156,7 @@ exports.action = function ( data , callback , config , SARAH ) {
 
     // config
     if ( ! cfg.Cube_IP ) return callback ({ 'tts' : 'Adresse I P non paramétrée.' });
-    if ( ! Cube.UUID ) return callback ({ 'tts' : 'Adresse I P incorrecte (UUID absent)' });
-    console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + ' ' + Cube.UUID + '\n' );
+    console.log ( '\nCubeRemote => Config = ip:' + cfg.Cube_IP + '\n' );
 
     // xml data's
     Cube.Urn           = 'schemas-nds-com:service:' + data.CubeUrnL.split('¤')[0] + '#';
@@ -141,9 +169,13 @@ exports.action = function ( data , callback , config , SARAH ) {
     ( data.CubeTag ) ? Cube.Tag = data.CubeTag.split ('¤') : Cube.Tag = data.CubeTag;
 
     // Main
-    make_CubeBody ( Cube, function ( body ) {
+    Cube.Body = make_CubeBody (Cube);
 
-        Cube.Body = body;
+    ask_Code_Appairage ( callback, SARAH, 0, function ( clbkCode ) {
+
+        SARAH.speak ( clbkCode );
+
+        Cube.Body = Cube.Body.replace( 'Code_Appairage', Cube.Code_Appairage );
         //console.log ( 'Sending SOAP ...\r' + Cube.Body + '\r' ); // debug
 
         sendCube( Cube, function ( retCube ) {
@@ -151,20 +183,24 @@ exports.action = function ( data , callback , config , SARAH ) {
             ( Cube.SpecialAction ) ? logStr = '\nCuberemote => ' + Cube.SpecialAction : logStr = '\nCuberemote => ' + Cube.Action;
             switch ( retCube.retCmd ) {
                 case null :
-                    logStr += '[erreur] : ';
+                    logStr += ' [Erreur = '+ retCube.retCmd +'] : ';
                     Cube.ttsAction = 'La commande a échouée.';
                     break;
                 case -1 :
-                    logStr += '[' + retCube.retCmd + '] : ';
+                    logStr += ' [Erreur = ' + retCube.retCmd + '] : ';
                     Cube.ttsAction = 'Le Cube n\'est pas appairé.';
                     break;
-                default :
-                    logStr += ' [OK] : ';
+                case 0 :
+                    logStr += ' [OK = ' + retCube.retCmd + '] : ';
                     if ( Object.keys( retCube )[1] != undefined)
                         Cube.ttsAction = Cube.ttsAction.replace ( 'x', retCube[Object.keys( retCube )[1]] );
                     if ( Cube.SpecialAction )
                         write_XML_Channel( Cube, retCube.channelNumber, retCube.channelListId, retCube.locator, function ( retXml ) {
                             Cube.ttsAction = retXml });
+                    break;
+                default :
+                    logStr += ' [ ? = ' + retCube.retCmd + '] : ';
+                    Cube.ttsAction = 'Erreur inconnue.';
             }
             console.log ( logStr + Cube.ttsAction );
             callback ({ 'tts' : Cube.ttsAction });
