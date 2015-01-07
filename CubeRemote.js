@@ -127,6 +127,7 @@ function sendCube ( Cube, retCmd ) {
             while ( Cube.Resp.length )
                 retTab[Cube.Resp[0]] = ( new RegExp ( '<' + Cube.Resp[0] + '>(.*?)<\/' + Cube.Resp.shift() + '>', 'gm' ).exec( retBody )[1]);
 
+            //if ( Cube.Action == 'RegisterSmartPhone' && ! Cube.Code_Appairage ) retTab.retCmd = null; //'Code appairage absent';
         } else retTab.retCmd = null;
         console.log ( '\rRetour pour "debug" :\r' + retBody + '\n' ); // debug
         retCmd ( retTab );
